@@ -1,0 +1,22 @@
+# Archivos generados por Maven
+**/target/
+
+# Configuración local de Eclipse
+**/.classpath
+**/.project
+**/.settings/
+
+# Credenciales y configuración local
+.env
+.env.*
+!.env.example
+
+# Dependencias del frontend
+**/node_modules/
+
+# Archivos generados y entornos virtuales de Python
+**/__pycache__/
+**/.venv/
+
+# Archivos de registro
+*.log
