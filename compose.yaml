@@ -1,0 +1,36 @@
+name: forestguard
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_DB: forestguard
+      POSTGRES_USER: forestguard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configura POSTGRES_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forestguard -d forestguard"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
+  redis-data:

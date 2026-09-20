@@ -1,4 +1,4 @@
-\# ForestGuard
+# ForestGuard
 
 
 
@@ -8,23 +8,23 @@ de incendios forestales.
 
 
 
-\## Estructura del proyecto
+## Estructura del proyecto
 
 
 
-\- services: servicios backend desarrollados con Spring Boot.
+- services: servicios backend desarrollados con Spring Boot.
 
-\- frontend: interfaz web desarrollada con React.
+- frontend: interfaz web desarrollada con React.
 
-\- ml: preparación de datos, entrenamiento y evaluación de modelos.
+- ml: preparación de datos, entrenamiento y evaluación de modelos.
 
-\- infra: configuración de Docker Compose y recursos en la nube.
+- infra: configuración de Docker Compose y recursos en la nube.
 
-\- docs: decisiones de diseño, instrucciones y resultados de experimentos.
+- docs: decisiones de diseño, instrucciones y resultados de experimentos.
 
 
 
-\## Estado actual
+## Estado actual
 
 
 
