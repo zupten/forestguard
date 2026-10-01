@@ -8,6 +8,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import io.forestguard.api.dto.OpenMeteoResponse;
 
+import java.util.concurrent.TimeoutException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.server.ResponseStatusException;
+
 @Component
 public class OpenMeteoClient {
     private final WebClient webClient;
@@ -25,8 +30,20 @@ public class OpenMeteoClient {
     	                .queryParam("temperature_unit", "celsius")
     	                .queryParam("timezone", "Europe/Madrid")
     	                .build())
-    	        .retrieve()
-    	        .bodyToMono(OpenMeteoResponse.class)
-    	        .block(Duration.ofSeconds(10));
+    	        .retrieve().bodyToMono(OpenMeteoResponse.class)
+    	        .timeout(Duration.ofSeconds(10))
+    	        .onErrorMap(
+    	                TimeoutException.class,
+    	                ex -> new ResponseStatusException(
+    	                        HttpStatus.GATEWAY_TIMEOUT,
+    	                        "El servicio meteorologico no responde a tiempo",
+    	                        ex))
+    	        .onErrorMap(
+    	                WebClientException.class,
+    	                ex -> new ResponseStatusException(
+    	                        HttpStatus.BAD_GATEWAY,
+    	                        "No se pudo consultar el servicio meteorologico",
+    	                        ex))
+    	        .block();
     }
 }

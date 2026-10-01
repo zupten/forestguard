@@ -1,5 +1,6 @@
 package io.forestguard.api.service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import io.forestguard.api.dto.CrearMuestraRequest;
@@ -40,6 +41,21 @@ public class MuestraMeteorologicaService {
                 .map(this::convertirARespuesta)
                 .toList();
     }
+    
+
+	@Transactional
+	public MuestraResponse guardarDesdeModelo(
+	        OffsetDateTime instante, Double temperatura) {
+	
+	    MuestraMeteorologica muestra = new MuestraMeteorologica();
+	    muestra.setEstacion("PUNTO-VALENCIA-39.47--0.38");
+	    muestra.setFecha(instante.toLocalDate());
+	    muestra.setInstante(instante);
+	    muestra.setTemperatura(temperatura);
+	    muestra.setOrigen("OPEN_METEO_MODELO");
+	
+	    return convertirARespuesta(repository.save(muestra));
+	}
 
     private MuestraResponse convertirARespuesta(
             MuestraMeteorologica muestra) {
@@ -48,7 +64,8 @@ public class MuestraMeteorologicaService {
                 muestra.getEstacion(),
                 muestra.getFecha(),
                 muestra.getTemperatura(),
-                muestra.getOrigen()
+                muestra.getOrigen(),
+                muestra.getInstante()
         );
     }
 }

@@ -1,6 +1,7 @@
 package io.forestguard.api.entity;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,6 +28,9 @@ public class MuestraMeteorologica {
     
     @Column(nullable = false)
     private String origen;
+
+    @Column(nullable = true)
+    private OffsetDateTime instante;
 
     public MuestraMeteorologica() {
     }
@@ -65,5 +69,14 @@ public class MuestraMeteorologica {
 
     public void setOrigen(String origen) {
         this.origen = origen;
+    }
+    
+
+    public OffsetDateTime getInstante() {
+        return instante;
+    }
+
+    public void setInstante(OffsetDateTime instante) {
+        this.instante = instante;
     }
 }

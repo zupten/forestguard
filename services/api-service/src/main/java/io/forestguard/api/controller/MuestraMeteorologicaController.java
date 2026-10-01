@@ -14,16 +14,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import io.forestguard.api.service.ImportacionMeteorologicaService;
 
 @RestController
 @RequestMapping("/api/muestras")
 public class MuestraMeteorologicaController {
-
+	private final ImportacionMeteorologicaService importacionService;
     private final MuestraMeteorologicaService service;
 
     public MuestraMeteorologicaController(
-            MuestraMeteorologicaService service) {
+            MuestraMeteorologicaService service,
+            ImportacionMeteorologicaService importacionService) {
+
         this.service = service;
+        this.importacionService = importacionService;
     }
 
     @PostMapping
@@ -31,6 +35,12 @@ public class MuestraMeteorologicaController {
     public MuestraResponse crear(
     		@Valid @RequestBody CrearMuestraRequest request) {
         return service.guardar(request);
+    }
+    
+    @PostMapping("/importar/valencia")
+    @ResponseStatus(HttpStatus.CREATED)
+    public MuestraResponse importarValencia() {
+        return importacionService.importarValencia();
     }
 
     @GetMapping
