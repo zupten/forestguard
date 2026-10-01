@@ -45,7 +45,7 @@ public class ImportacionMeteorologicaService {
         OffsetDateTime instante;
 
         try {
-            instante = respuesta.actual().time() // tiempo de respuesta de open meteo
+            instante = respuesta.actual().time() // Fecha y hora de la muestra meteorologica
                     .atZone(ZoneId.of(respuesta.timezone()))
                     .toOffsetDateTime();
 
