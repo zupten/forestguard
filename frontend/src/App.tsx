@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as L from 'leaflet'
 
 const BARX: L.LatLngTuple = [39.016944, -0.304722]
@@ -9,8 +9,17 @@ const ESPANA = L.latLngBounds([27.5, -18.5], [44.2, 4.5])
 const ZONA_PRUEBA = L.latLngBounds(BARX, INCENDIO).pad(0.8)
 
 export default function App() {
+  type Incendio = {
+    numeroParte: string
+    provincia: string
+    municipio: string
+    fechaDeteccion: string
+    latitud: number
+    longitud: number
+  }
   const contenedor = useRef<HTMLDivElement>(null)
   const mapa = useRef<L.Map | null>(null)
+  const [estado, setEstado] = useState('Cargando incendios...')
 
   useEffect(() => {
     if (!contenedor.current) return
@@ -39,19 +48,61 @@ export default function App() {
         'Indicativo: 8072Y<br>Ubicación de referencia meteorológica.',
       )
 
-    L.circleMarker(INCENDIO, {
-      radius: 7,
-      color: '#b91c1c',
-      fillColor: '#f87171',
-      fillOpacity: 0.9,
-    })
-      .addTo(instancia)
-      .bindPopup(
-        '<strong>Incendio histórico EGIF</strong><br>' +
-        'Identificador: 2021460071<br>' +
-        'Simat de la Valldigna · 25/07/2021<br>' +
-        'Localización registrada; no representa el perímetro quemado.',
-      )
+    const cancelacion = new AbortController()
+    const incendios = L.featureGroup().addTo(instancia)
+
+    async function cargarIncendios() {
+      try {
+        const respuesta = await fetch('/api/incendios', {
+          signal: cancelacion.signal,
+        })
+
+        if (!respuesta.ok) {
+          throw new Error(`HTTP ${respuesta.status}`)
+        }
+
+        const datos: Incendio[] = await respuesta.json()
+        if (cancelacion.signal.aborted) return
+
+        for (const incendio of datos) {
+          // Usar texto para no interpretar los datos como HTML.
+          const contenido = document.createElement('div')
+          contenido.style.whiteSpace = 'pre-line'
+          contenido.textContent =
+            `Incendio histórico EGIF\n` +
+            `Parte: ${incendio.numeroParte}\n` +
+            `Provincia (código): ${incendio.provincia}\n` +
+            `Municipio (código): ${incendio.municipio}\n` +
+            `Detección: ${incendio.fechaDeteccion.replace('T', ' ')}\n` +
+            `Localización registrada; no representa el perímetro quemado.`
+
+          L.circleMarker([incendio.latitud, incendio.longitud], {
+            radius: 5,
+            color: '#b91c1c',
+            fillColor: '#f87171',
+            fillOpacity: 0.8,
+          })
+            .bindPopup(contenido)
+            .addTo(incendios)
+        }
+
+        setEstado(`${datos.length} incendios históricos cargados`)
+
+        if (datos.length > 0) {
+          instancia.fitBounds(incendios.getBounds(), {
+            padding: [20, 20],
+            maxZoom: 12,
+          })
+        }
+      } catch (error) {
+        if (cancelacion.signal.aborted) return
+
+      console.error('Error al cargar los incendios:', error)
+      setEstado('No se pudieron cargar los incendios. Comprueba la API.')
+      }
+    }
+
+    void cargarIncendios()
 
     // Actualizar el mapa si cambia el tamaño de su contenedor.
     const observador = new ResizeObserver(() => {
@@ -61,6 +112,7 @@ export default function App() {
 
     // Liberar recursos al desmontar el componente.
     return () => {
+      cancelacion.abort()
       observador.disconnect()
       instancia.remove()
       mapa.current = null
@@ -102,8 +154,11 @@ export default function App() {
       </section>
 
       <footer className="border-t border-slate-200 bg-white px-5 py-3 text-sm">
-        Azul: estación BARX · Rojo: incendio histórico de Simat.
-        Datos de muestra; no indica incendios activos ni predicciones.
+        <p role="status">{estado}</p>
+        <p>
+          Azul: estación BARX · Rojo: incendios históricos EGIF.
+          No indica incendios activos ni predicciones.
+        </p>
       </footer>
     </main>
   )
